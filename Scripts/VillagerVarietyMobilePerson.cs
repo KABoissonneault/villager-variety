@@ -66,7 +66,6 @@ namespace VillagerVariety
         float animTimer = 0;
 
         bool isUsingGuardTexture = false;
-        bool skippedFirstTexture = false;
 
         #endregion
 
@@ -194,6 +193,9 @@ namespace VillagerVariety
                     case Races.Nord:
                         textures = (gender == Genders.Male) ? VillagerVarietyMod.MALE_NORD_TEXTURES : VillagerVarietyMod.FEMALE_NORD_TEXTURES;
                         break;
+                    case Races.DarkElf:
+                        textures = (gender == Genders.Male) ? VillagerVarietyMod.MALE_DARKELF_TEXTURES : VillagerVarietyMod.FEMALE_DARKELF_TEXTURES;
+                        break;
                     case Races.Breton:
                     default:
                         textures = (gender == Genders.Male) ? VillagerVarietyMod.MALE_BRETON_TEXTURES : VillagerVarietyMod.FEMALE_BRETON_TEXTURES;
@@ -205,14 +207,6 @@ namespace VillagerVariety
             int archive = textures[personVariant];
             
             CacheRecordSizesAndFrames(archive);
-
-            // SetPerson is called twice for our climate variants (see VillagerVarietyPopulationManagerProxy)
-            // Skip the first call since it's gonna be discarded anyway
-            if (!string.IsNullOrEmpty(VillagerVarietyMod.GetClimateVariant()) && !skippedFirstTexture)
-            {
-                skippedFirstTexture = true;
-                return;
-            }
 
             int variant = Random.Range(0, VillagerVarietyMod.NUM_VARIANTS);
             string season = VillagerVarietyMod.SEASON_STRS[(int)DaggerfallUnity.Instance.WorldTime.Now.SeasonValue];

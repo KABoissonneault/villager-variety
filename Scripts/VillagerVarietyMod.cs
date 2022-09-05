@@ -3,8 +3,9 @@ using System.Linq;
 using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.Utility.ModSupport;
 using DaggerfallWorkshop;
-using DaggerfallConnect;
 using DaggerfallConnect.Arena2;
+using DaggerfallWorkshop.Game.Utility;
+using DaggerfallWorkshop.Game.Entity;
 
 namespace VillagerVariety
 {
@@ -28,7 +29,44 @@ namespace VillagerVariety
 
         private void Start()
         {
-            VillagerVarietyPopulationManagerProxy.Register();
+            PopulationManager.MobileNPCGenerator = GenerateMobileNPC;
+        }
+
+        void GenerateMobileNPC(PopulationManager.PoolItem poolItem)
+        {
+            if (DFRandom.random_range(0, 2) == 0)
+            {
+                poolItem.npc.Gender = Genders.Male;
+                poolItem.npc.PersonOutfitVariant = 0;
+                poolItem.npc.IsGuard = false;
+                poolItem.npc.Race = Races.DarkElf;
+                poolItem.npc.NameNPC = DaggerfallUnity.Instance.NameHelper.FullName(NameHelper.BankTypes.DarkElf, poolItem.npc.Gender);
+                poolItem.npc.PersonFaceRecordId = 2000;
+                poolItem.npc.Asset.SetPerson(poolItem.npc.Race, poolItem.npc.Gender, poolItem.npc.PersonOutfitVariant, poolItem.npc.IsGuard, 0, poolItem.npc.PersonFaceRecordId);
+            }
+            else
+            {
+                var PlayerGPS = GameManager.Instance.PlayerGPS;
+
+                // Daggerfall makes Swamp and Subtropical climates into Bretons using Redguard names
+                // For VV, we replace these with Redguard textures, which the MobilePerson script will replace with a Subtropical variant if available
+                if (PlayerGPS.CurrentClimateIndex == (int)MapsFile.Climates.Swamp
+                    || PlayerGPS.CurrentClimateIndex == (int)MapsFile.Climates.Subtropical)
+                {
+                    poolItem.npc.RandomiseNPC(Races.Redguard);
+                }
+                else if (PlayerGPS.CurrentRegionIndex == (int)DaggerfallRegions.DragontailMountains
+                        || PlayerGPS.CurrentRegionIndex == (int)DaggerfallRegions.Ephesus)
+                {
+                    poolItem.npc.RandomiseNPC(Races.Redguard);
+                }
+                // Generate the default climate race
+                else
+                {
+                    var race = RaceTemplate.GetRaceFromFactionRace(PlayerGPS.ClimateSettings.People);
+                    poolItem.npc.RandomiseNPC(race);
+                }
+            }
         }
 
         public static readonly int[] MALE_REDGUARD_TEXTURES = new int[] { 381, 382, 383, 384 };
@@ -39,6 +77,9 @@ namespace VillagerVariety
 
         public static readonly int[] MALE_BRETON_TEXTURES = new int[] { 385, 386, 391, 394 };
         public static readonly int[] FEMALE_BRETON_TEXTURES = new int[] { 453, 454, 455, 456 };
+
+        public static readonly int[] MALE_DARKELF_TEXTURES = new int[] { 2000 };
+        public static readonly int[] FEMALE_DARKELF_TEXTURES = new int[] { 2001 };
 
         public static readonly int[] GUARD_TEXTURES = { 399 };
 
